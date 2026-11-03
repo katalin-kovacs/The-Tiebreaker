@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Scale, 
   Sparkles, 
@@ -13,7 +13,8 @@ import {
   ArrowLeft,
   Sliders,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -55,6 +56,8 @@ export default function App() {
     primaryGoal: string;
   } | null>(null);
 
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   // Modals & Drawers
   const [showHistory, setShowHistory] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
@@ -69,6 +72,16 @@ export default function App() {
     }
   }, []);
 
+  const handleCancelAnalysis = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsLoading(false);
+    setLoadingStep('');
+    setError(null);
+  };
+
   const handleAnalyzeDecision = async (formData: {
     title: string;
     options: OptionInput[];
@@ -79,6 +92,10 @@ export default function App() {
     setIsLoading(true);
     setError(null);
     setLoadingStep('Reviewing dilemma and option constraints...');
+
+    // Setup fresh AbortController
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     const timer1 = setTimeout(() => {
       setLoadingStep('Generating categorized pros & cons with mitigations...');
@@ -97,6 +114,7 @@ export default function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
+        signal: controller.signal,
       });
 
       clearTimeout(timer1);
@@ -151,11 +169,21 @@ export default function App() {
         // ignore
       }
     } catch (err: any) {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+
+      if (err?.name === 'AbortError' || controller.signal.aborted) {
+        console.log('Analysis cancelled by user');
+        return;
+      }
+
       console.error(err);
       setError(err?.message || 'An error occurred while analyzing. Please try again.');
     } finally {
       setIsLoading(false);
       setLoadingStep('');
+      abortControllerRef.current = null;
     }
   };
 
@@ -281,6 +309,17 @@ export default function App() {
               <p className="text-2xs text-slate-400">
                 Evaluating criteria, generating mitigations, and cross-checking cognitive biases
               </p>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleCancelAnalysis}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/90 px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-slate-700 hover:text-white transition cursor-pointer"
+                >
+                  <X className="h-3.5 w-3.5" />
+                  <span>Cancel Analysis</span>
+                </button>
+              </div>
             </div>
           </div>
         )}

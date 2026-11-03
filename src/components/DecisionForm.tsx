@@ -11,7 +11,8 @@ import {
   Info,
   Layers,
   FileQuestion,
-  CheckCircle2
+  CheckCircle2,
+  ChevronDown
 } from 'lucide-react';
 import { OptionInput } from '../types.ts';
 import { DECISION_PRESETS, DecisionPreset } from '../data/presets.ts';
@@ -41,6 +42,10 @@ export const DecisionForm: React.FC<DecisionFormProps> = ({
   const [primaryGoal, setPrimaryGoal] = useState('');
   const [error, setError] = useState<string | null>(null);
 
+  // Optional blocks as accordions, closed by default
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [isContextOpen, setIsContextOpen] = useState(false);
+
   const handleAddOption = () => {
     if (options.length >= 4) return;
     const newId = `opt_${Date.now()}`;
@@ -54,7 +59,10 @@ export const DecisionForm: React.FC<DecisionFormProps> = ({
   };
 
   const handleClearOptions = () => {
-    setOptions([]);
+    setOptions([
+      { id: 'opt_1', label: '', description: '' },
+      { id: 'opt_2', label: '', description: '' },
+    ]);
   };
 
   const handleOptionChange = (index: number, field: 'label' | 'description', value: string) => {
@@ -88,10 +96,13 @@ export const DecisionForm: React.FC<DecisionFormProps> = ({
     setOptions(preset.options);
     setContext(preset.context);
     setPrimaryGoal(preset.primaryGoal);
+    setIsOptionsOpen(true);
+    setIsContextOpen(true);
     setError(null);
   };
 
   const filledOptionsCount = options.filter((o) => o.label.trim().length > 0).length;
+  const hasContextData = context.trim().length > 0 || primaryGoal.trim().length > 0;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
@@ -138,14 +149,14 @@ export const DecisionForm: React.FC<DecisionFormProps> = ({
 
           {/* SECTION 1: Dilemma Title (Required) */}
           <div className="space-y-2">
-            <div className="flex items-baseline justify-between">
+            <div className="flex items-center justify-between">
               <label 
                 htmlFor="decision-title" 
                 className="block text-base font-bold text-slate-900 dark:text-white"
               >
-                1. What is the decision you need to make? <span className="text-rose-500">*</span>
+                1. What is the decision you need to make?
               </label>
-              <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+              <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-2xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                 Required
               </span>
             </div>
@@ -168,10 +179,14 @@ export const DecisionForm: React.FC<DecisionFormProps> = ({
             </div>
           </div>
 
-          {/* SECTION 2: Options Under Consideration (Optional & Clearly Labeled) */}
-          <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
+          {/* SECTION 2: Options Under Consideration (Accordion, Closed by Default) */}
+          <div className="rounded-xl border border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/60 overflow-hidden transition-all">
+            <button
+              type="button"
+              onClick={() => setIsOptionsOpen(!isOptionsOpen)}
+              className="w-full flex items-center justify-between p-4 sm:p-5 text-left hover:bg-slate-100/60 dark:hover:bg-slate-800/50 transition cursor-pointer"
+            >
+              <div className="flex-1 pr-3">
                 <div className="flex items-center gap-2">
                   <h2 className="text-base font-bold text-slate-900 dark:text-white">
                     2. Options Under Consideration
@@ -179,201 +194,235 @@ export const DecisionForm: React.FC<DecisionFormProps> = ({
                   <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-2xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
                     Optional
                   </span>
+                  {filledOptionsCount > 0 && !isOptionsOpen && (
+                    <span className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-2xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                      {filledOptionsCount} {filledOptionsCount === 1 ? 'option' : 'options'} specified
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Already have specific paths in mind? Enter them below. If you leave this blank, The Tiebreaker will automatically generate the 2–3 most logical paths to compare for your dilemma.
+                  {isOptionsOpen
+                    ? 'Enter specific paths below, or clear them to let AI auto-generate options.'
+                    : filledOptionsCount > 0
+                    ? `Click to edit your ${filledOptionsCount} specified options.`
+                    : 'Click to specify your own options (or leave closed to let AI formulate options).'}
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
-                {options.length < 4 && (
-                  <button
-                    type="button"
-                    onClick={handleAddOption}
-                    disabled={isLoading}
-                    className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition"
-                  >
-                    <Plus className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                    <span>Add Option</span>
-                  </button>
-                )}
-
-                {options.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={handleClearOptions}
-                    disabled={isLoading}
-                    className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 px-1.5 py-1"
-                    title="Clear all option boxes to let AI auto-generate options"
-                  >
-                    Clear All
-                  </button>
-                )}
+              <div className="flex items-center gap-1.5 text-slate-400 shrink-0">
+                <ChevronDown
+                  className={`h-5 w-5 transform transition-transform duration-200 ${
+                    isOptionsOpen ? 'rotate-180 text-indigo-600 dark:text-indigo-400' : ''
+                  }`}
+                />
               </div>
-            </div>
+            </button>
 
-            {/* Options list or Auto-suggest Empty State */}
-            {options.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-indigo-200 bg-indigo-50/40 p-5 dark:border-indigo-900/60 dark:bg-indigo-950/20 text-center">
-                <Sparkles className="mx-auto h-6 w-6 text-indigo-500 mb-1.5" />
-                <h4 className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
-                  AI will auto-generate options for your dilemma
-                </h4>
-                <p className="text-xs text-indigo-800/80 dark:text-indigo-300/80 max-w-md mx-auto mt-0.5">
-                  You don't need to specify any choices. The Tiebreaker will automatically identify the most viable contrasting paths (e.g. Option A vs Option B) based on your dilemma.
-                </p>
-                <button
-                  type="button"
-                  onClick={handleAddOption}
-                  className="mt-3 inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>I'd rather specify my own options</span>
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {options.map((opt, idx) => (
-                  <div 
-                    key={opt.id}
-                    className="group relative rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-800/50 transition-all hover:border-slate-300 dark:hover:border-slate-700"
-                  >
-                    {/* Option Header badge */}
-                    <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200/60 dark:border-slate-700/60">
-                      <div className="flex items-center gap-2">
-                        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-600 font-bold text-xs text-white shadow-xs">
-                          {String.fromCharCode(65 + idx)}
-                        </span>
-                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                          Option {String.fromCharCode(65 + idx)}
-                        </span>
-                        <span className="text-2xs text-slate-400">
-                          (Optional — fill in or leave empty)
-                        </span>
+            {/* Accordion Body */}
+            {isOptionsOpen && (
+              <div className="p-4 sm:p-5 pt-0 border-t border-slate-200/60 dark:border-slate-800 space-y-4">
+                <div className="pt-3 space-y-4">
+                  {options.map((opt, idx) => (
+                    <div 
+                      key={opt.id}
+                      className="group relative rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700/80 dark:bg-slate-800/70 transition-all hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs"
+                    >
+                      {/* Option Header badge */}
+                      <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-700/60">
+                        <div className="flex items-center gap-2">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-600 font-bold text-xs text-white shadow-xs">
+                            {String.fromCharCode(65 + idx)}
+                          </span>
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                            Option {String.fromCharCode(65 + idx)}
+                          </span>
+                          <span className="text-2xs text-slate-400">
+                            (Optional)
+                          </span>
+                        </div>
+
+                        {options.length > 2 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveOption(idx)}
+                            disabled={isLoading}
+                            className="text-slate-400 hover:text-rose-600 p-1 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
+                            title="Remove this option box"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </div>
 
+                      {/* Distinctly labeled fields explaining what each box represents */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        {/* Box 1: Option Title / Name */}
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
+                            <span>Option Name / Action</span>
+                            <span className="text-2xs font-normal text-slate-400">Primary label</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={opt.label}
+                            onChange={(e) => handleOptionChange(idx, 'label', e.target.value)}
+                            placeholder={
+                              idx === 0 
+                                ? 'e.g. Accept the startup offer' 
+                                : idx === 1 
+                                ? 'e.g. Stay at current corporate role' 
+                                : 'e.g. Negotiate internal transfer'
+                            }
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                            disabled={isLoading}
+                          />
+                          <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1">
+                            The distinct course of action you could take.
+                          </p>
+                        </div>
+
+                        {/* Box 2: Specific Nuance or Conditions */}
+                        <div>
+                          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
+                            <span>Key Nuance or Specifics (Optional)</span>
+                            <span className="text-2xs font-normal text-slate-400">Extra detail</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={opt.description || ''}
+                            onChange={(e) => handleOptionChange(idx, 'description', e.target.value)}
+                            placeholder={
+                              idx === 0 
+                                ? 'e.g. 1.5% equity stake, 60-hr weeks, higher upside' 
+                                : idx === 1 
+                                ? 'e.g. 40-hr weeks, 401k match, slower promotions' 
+                                : 'e.g. Ask for 15% raise and hybrid schedule'
+                            }
+                            className="w-full rounded-lg border border-slate-300/90 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-600 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                            disabled={isLoading}
+                          />
+                          <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1">
+                            Any specific terms, costs, or tradeoffs already attached to this choice.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Moved here: Add Options and Clear All buttons AFTER the option cards */}
+                  <div className="flex items-center justify-between pt-2">
+                    {options.length < 4 && (
                       <button
                         type="button"
-                        onClick={() => handleRemoveOption(idx)}
+                        onClick={handleAddOption}
                         disabled={isLoading}
-                        className="text-slate-400 hover:text-rose-600 p-1 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
-                        title="Remove this option box"
+                        className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 shadow-2xs transition"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Plus className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+                        <span>Add Option {String.fromCharCode(65 + options.length)}</span>
                       </button>
-                    </div>
+                    )}
 
-                    {/* Distinctly labeled fields explaining what each box represents */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                      {/* Box 1: Option Title / Name */}
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
-                          <span>Option Name / Action</span>
-                          <span className="text-2xs font-normal text-slate-400">Primary label</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={opt.label}
-                          onChange={(e) => handleOptionChange(idx, 'label', e.target.value)}
-                          placeholder={
-                            idx === 0 
-                              ? 'e.g. Accept the startup offer' 
-                              : idx === 1 
-                              ? 'e.g. Stay at current corporate role' 
-                              : 'e.g. Negotiate internal transfer'
-                          }
-                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                          disabled={isLoading}
-                        />
-                        <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1">
-                          The distinct course of action you could take.
-                        </p>
-                      </div>
-
-                      {/* Box 2: Specific Nuance or Conditions */}
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
-                          <span>Key Nuance or Specifics (Optional)</span>
-                          <span className="text-2xs font-normal text-slate-400">Extra detail</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={opt.description || ''}
-                          onChange={(e) => handleOptionChange(idx, 'description', e.target.value)}
-                          placeholder={
-                            idx === 0 
-                              ? 'e.g. 1.5% equity stake, 60-hr weeks, higher upside' 
-                              : idx === 1 
-                              ? 'e.g. 40-hr weeks, 401k match, slower promotions' 
-                              : 'e.g. Ask for 15% raise and hybrid schedule'
-                          }
-                          className="w-full rounded-lg border border-slate-300/90 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-indigo-600 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                          disabled={isLoading}
-                        />
-                        <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1">
-                          Any specific terms, costs, or tradeoffs already attached to this choice.
-                        </p>
-                      </div>
-                    </div>
+                    {filledOptionsCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleClearOptions}
+                        disabled={isLoading}
+                        className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 px-2 py-1"
+                        title="Clear option fields"
+                      >
+                        Clear All Options
+                      </button>
+                    )}
                   </div>
-                ))}
+                </div>
               </div>
             )}
           </div>
 
-          {/* SECTION 3: Personal Context, Constraints & Priorities (Openly Visible & Optional) */}
-          <div className="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                3. Your Personal Context, Constraints & Values
-              </h2>
-              <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-2xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                Optional
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 -mt-1">
-              Decisions never happen in a vacuum. Adding your real-world circumstances helps The Tiebreaker give practical, nuanced advice rather than theoretical generalities.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Field 1: Core Value Priority / Goal */}
-              <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-800/40 space-y-1.5">
-                <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                  <Target className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  <span>Primary Value Goal / North Star (Optional)</span>
-                </label>
-                <input
-                  type="text"
-                  value={primaryGoal}
-                  onChange={(e) => setPrimaryGoal(e.target.value)}
-                  placeholder="e.g. Maximize 5-year wealth, peace of mind & family time, rapid learning, freedom"
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                  disabled={isLoading}
-                />
-                <p className="text-2xs text-slate-500 dark:text-slate-400">
-                  What single factor matters most when push comes to shove?
+          {/* SECTION 3: Personal Context, Constraints & Priorities (Accordion, Closed by Default) */}
+          <div className="rounded-xl border border-slate-200 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/60 overflow-hidden transition-all">
+            <button
+              type="button"
+              onClick={() => setIsContextOpen(!isContextOpen)}
+              className="w-full flex items-center justify-between p-4 sm:p-5 text-left hover:bg-slate-100/60 dark:hover:bg-slate-800/50 transition cursor-pointer"
+            >
+              <div className="flex-1 pr-3">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                    3. Your Personal Context, Constraints & Values
+                  </h2>
+                  <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-2xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                    Optional
+                  </span>
+                  {hasContextData && !isContextOpen && (
+                    <span className="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-2xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                      Context added
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  {isContextOpen
+                    ? 'Add timelines, financial constraints, or your #1 value priority to tailor the verdict.'
+                    : hasContextData
+                    ? 'Click to edit your personal constraints and core value priorities.'
+                    : 'Click to add real-world constraints or core value priorities (or leave closed).'}
                 </p>
               </div>
 
-              {/* Field 2: Real-World Constraints */}
-              <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-800/40 space-y-1.5">
-                <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                  <Calendar className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                  <span>Real-World Context & Constraints (Optional)</span>
-                </label>
-                <textarea
-                  rows={2}
-                  value={context}
-                  onChange={(e) => setContext(e.target.value)}
-                  placeholder="e.g. 6 months liquid emergency fund, toddler at home, need to decide by Friday, low risk tolerance"
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                  disabled={isLoading}
+              <div className="flex items-center gap-1.5 text-slate-400 shrink-0">
+                <ChevronDown
+                  className={`h-5 w-5 transform transition-transform duration-200 ${
+                    isContextOpen ? 'rotate-180 text-indigo-600 dark:text-indigo-400' : ''
+                  }`}
                 />
-                <p className="text-2xs text-slate-500 dark:text-slate-400">
-                  Timelines, budget limits, family commitments, or hard non-negotiables.
-                </p>
               </div>
-            </div>
+            </button>
+
+            {/* Accordion Body */}
+            {isContextOpen && (
+              <div className="p-4 sm:p-5 pt-0 border-t border-slate-200/60 dark:border-slate-800 space-y-4">
+                <div className="pt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Field 1: Core Value Priority / Goal */}
+                  <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700/80 dark:bg-slate-800/70 space-y-1.5 shadow-2xs">
+                    <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <Target className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                      <span>Primary Value Goal / North Star (Optional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={primaryGoal}
+                      onChange={(e) => setPrimaryGoal(e.target.value)}
+                      placeholder="e.g. Maximize 5-year wealth, peace of mind & family time, rapid learning, freedom"
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                      disabled={isLoading}
+                    />
+                    <p className="text-2xs text-slate-500 dark:text-slate-400">
+                      What single factor matters most when push comes to shove?
+                    </p>
+                  </div>
+
+                  {/* Field 2: Real-World Constraints */}
+                  <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700/80 dark:bg-slate-800/70 space-y-1.5 shadow-2xs">
+                    <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <Calendar className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                      <span>Real-World Context & Constraints (Optional)</span>
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={context}
+                      onChange={(e) => setContext(e.target.value)}
+                      placeholder="e.g. 6 months liquid emergency fund, toddler at home, need to decide by Friday, low risk tolerance"
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-600 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                      disabled={isLoading}
+                    />
+                    <p className="text-2xs text-slate-500 dark:text-slate-400">
+                      Timelines, budget limits, family commitments, or hard non-negotiables.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Submit CTA */}

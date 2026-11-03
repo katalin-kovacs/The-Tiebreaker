@@ -52,36 +52,32 @@ export const VerdictBanner: React.FC<VerdictBannerProps> = ({
   const recommendedOpt = options.find((o) => o.id === verdict.recommendedOptionId);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-indigo-200/90 bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-950 text-white shadow-xl dark:border-indigo-800/80">
-      {/* Background ambient glow */}
-      <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-indigo-500/15 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-violet-500/15 blur-3xl" />
-
-      <div className="relative p-6 sm:p-8">
+    <div className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white text-slate-900 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:text-white">
+      <div className="p-6 sm:p-8">
         {/* Top Tag & Status */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-indigo-800/50">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-400/20 text-amber-300 ring-1 ring-amber-400/30">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 ring-1 ring-amber-300/60 dark:ring-amber-700">
               <Trophy className="h-4 w-4" />
             </span>
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-300">
+            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
               The Tiebreaker Recommendation
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-800/60 px-3 py-1 text-xs font-semibold text-indigo-200 border border-indigo-700/60">
-              <Zap className="h-3.5 w-3.5 text-amber-400" />
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 border border-indigo-200/80 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800">
+              <Zap className="h-3.5 w-3.5 text-amber-500" />
               <span>{verdict.confidenceScore}% Confidence</span>
             </span>
 
             {finalDecision ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-300 border border-emerald-500/40">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                 <span>Resolved: {chosenOption?.label}</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-300 border border-amber-500/30">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
                 <span>In Evaluation</span>
               </span>
             )}
@@ -92,40 +88,42 @@ export const VerdictBanner: React.FC<VerdictBannerProps> = ({
         <div className="mt-5 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-8 space-y-4">
             <div>
-              <div className="text-xs font-medium text-indigo-300 mb-1">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">
                 Suggested Winner:
               </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                 <span>{verdict.recommendedOptionLabel}</span>
               </h2>
-              <p className="mt-1 text-sm sm:text-base font-semibold text-indigo-200">
+              <p className="mt-1 text-sm sm:text-base font-bold text-indigo-600 dark:text-indigo-400">
                 "{verdict.headline}"
               </p>
             </div>
 
-            <p className="text-sm text-slate-300 leading-relaxed">
+            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
               {verdict.rationale}
             </p>
 
-            {/* Decisive Pivot Factor */}
-            <div className="rounded-xl border border-indigo-700/60 bg-indigo-900/40 p-3.5 text-xs sm:text-sm">
-              <div className="font-semibold text-amber-300 flex items-center gap-1.5 mb-1">
-                <Compass className="h-4 w-4" />
+            {/* Decisive Pivot Factor (Preserved Background Block) */}
+            <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 p-4 text-xs sm:text-sm dark:border-indigo-900/60 dark:bg-indigo-950/40">
+              <div className="font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5 mb-1">
+                <Compass className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                 <span>The Decisive Factor:</span>
               </div>
-              <p className="text-slate-200">{verdict.keyDecisiveFactor}</p>
+              <p className="text-slate-800 dark:text-slate-200 font-medium leading-relaxed">
+                {verdict.keyDecisiveFactor}
+              </p>
             </div>
           </div>
 
           {/* Right Column: Blindspots & Commit Action */}
           <div className="lg:col-span-4 space-y-4">
-            {/* Blindspots card */}
-            <div className="rounded-xl border border-amber-500/30 bg-amber-950/30 p-3.5 text-xs text-amber-200">
-              <div className="font-semibold flex items-center gap-1.5 mb-1.5 text-amber-300">
-                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            {/* Blindspots card (Preserved Background Block) */}
+            <div className="rounded-xl border border-amber-200/80 bg-amber-50/70 p-4 text-xs text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-200">
+              <div className="font-bold flex items-center gap-1.5 mb-1.5 text-amber-900 dark:text-amber-300">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
                 <span>Watch Out For These Blindspots:</span>
               </div>
-              <ul className="space-y-1.5 list-disc list-inside text-slate-300">
+              <ul className="space-y-1.5 list-disc list-inside text-slate-700 dark:text-slate-300">
                 {verdict.blindspots.map((spot, i) => (
                   <li key={i} className="leading-snug">{spot}</li>
                 ))}
@@ -133,16 +131,16 @@ export const VerdictBanner: React.FC<VerdictBannerProps> = ({
             </div>
 
             {/* Action Box */}
-            <div className="rounded-xl border border-indigo-700/50 bg-white/5 p-3.5 backdrop-blur-xs">
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-800/50">
               {!finalDecision ? (
                 <div>
-                  <div className="text-xs font-semibold text-slate-200 mb-2">
+                  <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-2">
                     Ready to lock in your decision?
                   </div>
                   {!isCommitting ? (
                     <button
                       onClick={() => setIsCommitting(true)}
-                      className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-md hover:bg-emerald-500 active:scale-95 transition"
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs sm:text-sm font-bold text-white shadow-xs hover:bg-emerald-500 active:scale-95 transition cursor-pointer"
                     >
                       <Check className="h-4 w-4" />
                       <span>Commit to an Option</span>
@@ -152,7 +150,7 @@ export const VerdictBanner: React.FC<VerdictBannerProps> = ({
                       <select
                         value={selectedCommitOption}
                         onChange={(e) => setSelectedCommitOption(e.target.value)}
-                        className="w-full rounded-md border border-indigo-700 bg-slate-900 px-2.5 py-1.5 text-xs text-white"
+                        className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                       >
                         {options.map((opt) => (
                           <option key={opt.id} value={opt.id}>
@@ -165,18 +163,18 @@ export const VerdictBanner: React.FC<VerdictBannerProps> = ({
                         value={commitNotes}
                         onChange={(e) => setCommitNotes(e.target.value)}
                         placeholder="Optional note: Why you decided this..."
-                        className="w-full rounded-md border border-indigo-700 bg-slate-900 px-2.5 py-1.5 text-xs text-white placeholder:text-slate-500"
+                        className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500"
                       />
                       <div className="flex gap-2">
                         <button
                           onClick={handleCommit}
-                          className="flex-1 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-500 transition"
+                          className="flex-1 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-500 transition cursor-pointer"
                         >
                           Lock It In
                         </button>
                         <button
                           onClick={() => setIsCommitting(false)}
-                          className="rounded-md border border-slate-700 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-white/5 transition"
+                          className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition cursor-pointer"
                         >
                           Cancel
                         </button>
@@ -186,13 +184,13 @@ export const VerdictBanner: React.FC<VerdictBannerProps> = ({
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
-                  <div className="text-xs text-slate-300">
-                    <span className="font-semibold text-emerald-400">Decision committed!</span>
-                    {finalDecision.notes && <p className="italic text-slate-400 mt-0.5">"{finalDecision.notes}"</p>}
+                  <div className="text-xs text-slate-700 dark:text-slate-300">
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">Decision committed!</span>
+                    {finalDecision.notes && <p className="italic text-slate-500 dark:text-slate-400 mt-0.5">"{finalDecision.notes}"</p>}
                   </div>
                   <button
                     onClick={onReopenDecision}
-                    className="flex items-center gap-1 rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:bg-white/5 transition"
+                    className="flex items-center gap-1 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition cursor-pointer"
                     title="Change or reopen decision"
                   >
                     <RotateCcw className="h-3 w-3" />
