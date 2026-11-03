@@ -1,0 +1,6 @@
+{
+  "name": "The Tiebreaker",
+  "description": "An intelligent decision-making workspace that breaks ties and evaluates dilemmas through pros & cons, multi-criteria comparison matrices, SWOT analysis, and AI scenario forecasting.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
