@@ -27,6 +27,7 @@ import {
   ViewTab 
 } from './types.ts';
 import { loadSavedDecisions, saveDecisionRecord, deleteDecisionRecord } from './utils/storage.ts';
+import { Theme, getInitialTheme, applyTheme } from './utils/theme.ts';
 import { DecisionPreset } from './data/presets.ts';
 
 import { Navbar } from './components/Navbar.tsx';
@@ -58,10 +59,21 @@ export default function App() {
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  const [theme, setTheme] = useState<Theme>(() => getInitialTheme());
+
   // Modals & Drawers
   const [showHistory, setShowHistory] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+
+  // Apply theme changes to document and localStorage
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   // Load saved decisions on mount
   useEffect(() => {
@@ -286,6 +298,8 @@ export default function App() {
         onOpenHistory={() => setShowHistory(true)}
         savedCount={savedDecisions.length}
         onOpenPresets={() => setShowPresets(true)}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
       />
 
       {/* Main Content Area */}

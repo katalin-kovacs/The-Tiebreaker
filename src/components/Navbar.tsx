@@ -1,11 +1,13 @@
 import React from 'react';
-import { Scale, History, PlusCircle, Sparkles, HelpCircle } from 'lucide-react';
+import { Scale, History, PlusCircle, Sparkles, Sun, Moon } from 'lucide-react';
 
 interface NavbarProps {
   onNewDecision: () => void;
   onOpenHistory: () => void;
   savedCount: number;
   onOpenPresets: () => void;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -13,6 +15,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenHistory,
   savedCount,
   onOpenPresets,
+  theme,
+  onToggleTheme,
 }) => {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/90 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/90 transition-colors">
@@ -61,6 +65,19 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-100 px-1.5 text-xs font-bold text-slate-700 dark:bg-slate-700 dark:text-slate-200">
                 {savedCount}
               </span>
+            )}
+          </button>
+
+          <button
+            onClick={onToggleTheme}
+            className="flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-700 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition"
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label="Toggle color theme"
+          >
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4 text-amber-400 hover:rotate-45 transition-transform" />
+            ) : (
+              <Moon className="h-4 w-4 text-indigo-500 hover:-rotate-12 transition-transform" />
             )}
           </button>
 

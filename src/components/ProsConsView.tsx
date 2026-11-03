@@ -58,6 +58,21 @@ export const ProsConsView: React.FC<ProsConsViewProps> = ({
   // Use pure calculation helper for net score
   const calculateOptionScore = calculateOptionProsConsScore;
 
+  const handleSelectOption = (optId: string) => {
+    setSelectedOptionId(optId);
+    if (activeCategoryFilter !== 'all') {
+      const nextOpt = optionsAnalysis.find((o) => o.optionId === optId);
+      if (nextOpt) {
+        const hasCategoryItems =
+          nextOpt.pros.some((p) => p.category.toLowerCase() === activeCategoryFilter.toLowerCase()) ||
+          nextOpt.cons.some((c) => c.category.toLowerCase() === activeCategoryFilter.toLowerCase());
+        if (!hasCategoryItems) {
+          setActiveCategoryFilter('all');
+        }
+      }
+    }
+  };
+
   const handleToggleDismiss = (optId: string, type: 'pro' | 'con', itemId: string) => {
     const updated = optionsAnalysis.map((opt) => {
       if (opt.optionId !== optId) return opt;
@@ -299,11 +314,13 @@ export const ProsConsView: React.FC<ProsConsViewProps> = ({
         {optionsAnalysis.map((opt) => {
           const isSelected = opt.optionId === selectedOptionId;
           const { prosScore, consScore, net } = calculateOptionScore(opt);
+          const activeProsCount = opt.pros.filter((p) => !p.dismissed).length;
+          const activeConsCount = opt.cons.filter((c) => !c.dismissed).length;
 
           return (
             <div
               key={opt.optionId}
-              onClick={() => setSelectedOptionId(opt.optionId)}
+              onClick={() => handleSelectOption(opt.optionId)}
               className={`cursor-pointer rounded-2xl border p-4 transition-all duration-200 ${
                 isSelected
                   ? 'border-indigo-600 bg-white ring-2 ring-indigo-500/20 shadow-md dark:border-indigo-500 dark:bg-slate-800'
@@ -332,13 +349,25 @@ export const ProsConsView: React.FC<ProsConsViewProps> = ({
                 </div>
               </div>
 
-              {/* Progress split */}
+              {/* Explicit counts & points split */}
               <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-                  <TrendingUp className="h-3.5 w-3.5" /> +{prosScore} Pros
+                <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
+                  <TrendingUp className="h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    <strong>{activeProsCount}</strong> {activeProsCount === 1 ? 'Pro' : 'Pros'}
+                  </span>
+                  <span className="text-2xs font-semibold px-1 py-0.2 rounded bg-emerald-100/80 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
+                    +{prosScore} pts
+                  </span>
                 </span>
-                <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400 font-medium">
-                  <TrendingDown className="h-3.5 w-3.5" /> -{consScore} Cons
+                <span className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-medium">
+                  <TrendingDown className="h-3.5 w-3.5 shrink-0" />
+                  <span>
+                    <strong>{activeConsCount}</strong> {activeConsCount === 1 ? 'Con' : 'Cons'}
+                  </span>
+                  <span className="text-2xs font-semibold px-1 py-0.2 rounded bg-rose-100/80 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300">
+                    -{consScore} pts
+                  </span>
                 </span>
               </div>
             </div>
@@ -387,27 +416,59 @@ export const ProsConsView: React.FC<ProsConsViewProps> = ({
             </span>
             <button
               onClick={() => setActiveCategoryFilter('all')}
-              className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition cursor-pointer ${
+              className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
                 activeCategoryFilter === 'all'
                   ? 'bg-indigo-600 text-white'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
               }`}
             >
-              All Categories
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategoryFilter(cat)}
-                className={`rounded-lg px-2.5 py-1 text-xs font-semibold capitalize transition cursor-pointer ${
-                  activeCategoryFilter.toLowerCase() === cat.toLowerCase()
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
+              <span>All</span>
+              <span
+                className={`rounded-full px-1.5 py-0.2 text-2xs font-bold ${
+                  activeCategoryFilter === 'all'
+                    ? 'bg-indigo-700 text-white'
+                    : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
                 }`}
               >
-                {cat}
-              </button>
-            ))}
+                {currentOption.pros.length + currentOption.cons.length}
+              </span>
+            </button>
+            {categories.map((cat) => {
+              const catProsCount = currentOption.pros.filter(
+                (p) => p.category.toLowerCase() === cat.toLowerCase()
+              ).length;
+              const catConsCount = currentOption.cons.filter(
+                (c) => c.category.toLowerCase() === cat.toLowerCase()
+              ).length;
+              const catTotal = catProsCount + catConsCount;
+              const isCatActive = activeCategoryFilter.toLowerCase() === cat.toLowerCase();
+
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategoryFilter(cat)}
+                  className={`rounded-lg px-2.5 py-1 text-xs font-semibold capitalize transition cursor-pointer flex items-center gap-1.5 ${
+                    isCatActive
+                      ? 'bg-indigo-600 text-white'
+                      : catTotal === 0
+                      ? 'bg-slate-100/60 text-slate-400 dark:bg-slate-800/40 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
+                  }`}
+                  title={`${cat}: ${catProsCount} pros, ${catConsCount} cons for ${currentOption.optionLabel}`}
+                >
+                  <span>{cat}</span>
+                  <span
+                    className={`rounded-full px-1.5 py-0.2 text-2xs font-bold ${
+                      isCatActive
+                        ? 'bg-indigo-700 text-white'
+                        : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    {catTotal}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         ) : (
           <div className="text-xs text-slate-500 dark:text-slate-400">
@@ -415,6 +476,24 @@ export const ProsConsView: React.FC<ProsConsViewProps> = ({
           </div>
         )}
       </div>
+
+      {/* Active Category Filter Banner */}
+      {displayMode === 'side-by-side' && activeCategoryFilter !== 'all' && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-indigo-200/80 bg-indigo-50/70 px-3.5 py-2 text-xs text-indigo-900 dark:border-indigo-900/60 dark:bg-indigo-950/40 dark:text-indigo-200">
+          <div className="flex items-center gap-2">
+            <Tag className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+            <span>
+              Filtered by <strong>{activeCategoryFilter}</strong>: Showing {filteredPros.length} pros &bull; {filteredCons.length} cons (out of {currentOption.pros.length + currentOption.cons.length} total for this option)
+            </span>
+          </div>
+          <button
+            onClick={() => setActiveCategoryFilter('all')}
+            className="font-bold underline hover:text-indigo-700 dark:hover:text-indigo-300 cursor-pointer"
+          >
+            Show All Items ({currentOption.pros.length + currentOption.cons.length})
+          </button>
+        </div>
+      )}
 
       {/* VIEW MODE 1: Standard Side-by-Side View */}
       {displayMode === 'side-by-side' && (

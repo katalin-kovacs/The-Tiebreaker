@@ -157,7 +157,7 @@ ${optionsPromptInstruction}
 
 Perform a comprehensive multi-lens evaluation:
 1. Identify/confirm the 2 to 4 options being compared (include 'id', 'label', and a concise 'description' for each).
-2. Pros and Cons list for EACH option (with impact weight 1 to 5, category, and actionable mitigation for each con).
+2. Pros and Cons list for EACH option: Provide AT LEAST 4 to 6 distinct, thoughtful pros and AT LEAST 4 to 6 distinct cons for EACH option. Distribute them across relevant categories such as Financial, Career & Growth, Well-being & Stress, Operational, Long-term Trajectory, Relationships, etc. (with impact weight 1 to 5, clear title, rich explanation, category, and actionable mitigation for each con). Ensure all items are substantial and realistic.
 3. A side-by-side Comparison Matrix with 4 to 6 relevant evaluation criteria (e.g., Financial Impact, Stress & Well-being, Career / Long-term Growth, Reversibility, Alignment with Priorities). Score each option from 1 to 10 on each criterion with a short commentary.
 4. A SWOT analysis (Strengths, Weaknesses, Opportunities, Threats) for EACH option.
 5. The 10-10-10 Rule forecast for each option: How will the user feel in 10 minutes, 10 months, and 10 years?
